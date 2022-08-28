@@ -317,8 +317,12 @@ static void LCD_UpdateSys(bool Redraw=0)
 #ifdef WITH_GPS_SRF
   Len+=Format_String(Line+Len, "SRF ");
 #endif
+#ifdef WITH_BTSERIAL_GPS
+  Len+=Format_String(Line+Len, "BT ");
+#else
   Len+=Format_UnsDec(Line+Len, GPS_getBaudRate(), 1);
   Len+=Format_String(Line+Len, "bps");
+#endif
   Line[Len]=0;
   LCD_DrawString(Line, 4, PosY, RGB565_BLACK, RGB565_WHITE);
   PosY+=LCD_FontHeight();

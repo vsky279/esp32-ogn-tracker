@@ -685,8 +685,12 @@ void OLED_DrawSystem(u8g2_t *OLED, GPS_Position *GPS)
   Len+=Format_String(Line+Len, "SRF ");
 #endif
 #endif // WITH_MAVLINK
+#ifdef WITH_BTSERIAL_GPS
+  Len+=Format_String(Line+Len, "BT ");
+#else
   Len+=Format_UnsDec(Line+Len, GPS_getBaudRate(), 1);
   Len+=Format_String(Line+Len, "bps");
+#endif
   Line[Len]=0;
   u8g2_DrawStr(OLED, 0, 24, Line);
 

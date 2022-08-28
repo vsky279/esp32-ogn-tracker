@@ -251,6 +251,13 @@ inline uint8_t NMEA_AppendCheckCRNL(char *NMEA, uint8_t Len) { return NMEA_Appen
      { if(!isPOGN()) return 0;
        return Data[5]=='L'; }
 
+   uint8_t isLXWP0(void) const                  // GPS recomended minimum data
+     { if(Data[1]!='L') return 0;
+       if(Data[2]!='X') return 0;
+       if(Data[3]!='W') return 0;
+       if(Data[4]!='P') return 0;
+       return Data[5]=='0'; }
+       
 } ;
 
 #endif // of __NMEA_H__

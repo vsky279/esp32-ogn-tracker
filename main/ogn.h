@@ -1115,6 +1115,7 @@ class GPS_Position: public GPS_Time
      if(RxMsg.isGxGSA()) return ReadGSA(RxMsg);
      if(RxMsg.isPGRMZ()) return ReadPGRMZ(RxMsg); // (pressure) altitude
      // if(RxMsg.isGxGSV()) return ReadGSV(RxMsg);
+     if(RxMsg.isLXWP0()) return ReadLXWP0(RxMsg); // (pressure) altitude
      return 0; }
 
    int8_t ReadNMEA(const char *NMEA)
@@ -1136,6 +1137,39 @@ class GPS_Position: public GPS_Time
      StdAltitude = (StdAltitude*312+512)>>10;
      return 1; }
 
+    // LXWP0,Y,222.3,1665.5,1.71,,,,,,239,174,10.1
+    // 0 loger_stored (Y/N)
+    // 1 IAS (kph)
+    // 2 baroaltitude (m)
+    // 3 vario (m/s)
+    // 4-8 unknown
+    // 9 heading of plane
+    // 10 windcourse (deg)
+    // 11 windspeed (kph)
+
+
+    // Or another example...
+
+    // $LXWP0,Y,0.0,95.7,0.00,,,,,,140,247,22.5*40
+    // logger_stored Y
+    // IAS=0.0km/h (glider was on the ground, ready for take-off. We might check speed unit just to make sure it is Km/h and not m/s)
+    // barometric altitude=95.7~96m
+    // Vario=0.00 m/s (on the ground, no moving)
+    // 5 empty fields
+    // Glider heading=140 deg
+    // Wind direction = 247 deg (- to 247deg)
+    // Wind Speed = 22.5km/h
+    // Data check sum=*40
+   int8_t ReadLXWP0(NMEA_RxMsg &RxMsg)
+   { if(RxMsg.Parms<12) return -2;
+     int8_t Ret=Read_Float1(StdAltitude, (const char *)(RxMsg.ParmPtr(2)));
+     if(Ret<=0) return -1;
+     Ret=Read_Float1(AirSpeed, (const char *)(RxMsg.ParmPtr(1)));
+     Ret=Read_Float1(ClimbRate, (const char *)(RxMsg.ParmPtr(3)));
+     Ret=Read_Float1(Heading, (const char *)(RxMsg.ParmPtr(9)));
+     hasBaro=1; Pressure=0; Temperature=0;
+     return 1; }
+     
    int8_t ReadGGA(NMEA_RxMsg &RxMsg)
    { if(RxMsg.Parms<14) return -2;                                                        // no less than 14 paramaters
      hasGPS = ReadTime((const char *)RxMsg.ParmPtr(0))>0;                                 // read time and check if same as the RMC says

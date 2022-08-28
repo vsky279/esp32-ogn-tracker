@@ -28,6 +28,10 @@
 #include "lorawan.h"
 #endif
 
+#ifdef WITH_BTSERIAL_GPS
+#include "btserial.h"
+#endif
+
 #ifdef WITH_SLEEP
 #include "esp_sleep.h"
 #endif
@@ -412,7 +416,9 @@ GPIO   HELTEC      TTGO       JACEK     M5_JACEK    T-Beam     T-Beamv10    Foll
 #endif
 
 #define CONS_UART UART_NUM_0      // UART0 for the console (the system does this for us)
+#ifndef WITH_BTSERIAL_GPS
 #define GPS_UART  UART_NUM_1      // UART1 for GPS data read and dialog
+#endif
 
 #define I2C_BUS     I2C_NUM_1     // use bus #1 to talk to OLED and Baro sensor
 
@@ -740,6 +746,28 @@ int   GPS_UART_Read       (uint8_t &Byte) { return uart_read_bytes  (GPS_UART, &
 void  GPS_UART_Write      (char     Byte) {        uart_write_bytes (GPS_UART, &Byte, 1);    }  // should be buffered and blocking
 void  GPS_UART_Flush      (int MaxWait  ) {        uart_wait_tx_done(GPS_UART, MaxWait);     }
 void  GPS_UART_SetBaudrate(int BaudRate ) {        uart_set_baudrate(GPS_UART, BaudRate);    }
+#endif
+
+#ifdef WITH_BTSERIAL_GPS
+int   GPS_UART_Read (uint8_t &Byte) {
+    int c = BluetoothSerial_read();
+    if (c<0) {
+        return 0;
+    } else {
+        uint8_t e = c; Byte = e;
+        return 1; 
+    }
+}
+
+void  GPS_UART_Write      (char     Byte) {
+    BluetoothSerial_write((uint8_t*)&Byte, 1);
+}
+
+void  GPS_UART_Flush      (int MaxWait  ) { }
+
+void  GPS_UART_SetBaudrate(int BaudRate ) { 
+    BTSerial_Init();
+}
 #endif
 
 #ifdef WITH_GPS_ENABLE

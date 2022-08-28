@@ -40,6 +40,10 @@
 #include "aprs.h"                 // APRS task
 #endif
 
+#ifdef WITH_BTSERIAL_GPS
+#include "btserial.h"
+#endif
+
 extern "C"
 void app_main(void)
 {
@@ -98,6 +102,20 @@ void app_main(void)
 // #endif
     }
 #endif
+
+#ifdef WITH_BTSERIAL_GPS
+    { 
+       int32_t Err=BTSerial_Init();                // start BT Serial
+// #ifdef DEBUG_PRINT
+      xSemaphoreTake(CONS_Mutex, portMAX_DELAY);
+      Format_String(CONS_UART_Write, "BTSerial_Init() => ");
+      Format_SignDec(CONS_UART_Write, Err);
+      Format_String(CONS_UART_Write, "\n");
+      xSemaphoreGive(CONS_Mutex);
+// #endif
+    }
+#endif
+
 
 #ifdef WITH_SDLOG
     Log_Mutex = xSemaphoreCreateMutex();
